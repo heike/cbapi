@@ -1,0 +1,15 @@
+Package: cbapi
+Maintainer: Heike Hofmann <hofmann@iastate.edu>
+Author: Heike Hofmann
+Version: 0.9
+License: MIT
+Title: Accessing data through the API of the Census Bureau
+Depends:
+    plyr,
+    rjson,
+    XML
+Suggests:
+    ggplot2
+Description: Functions to access data through the US Census Bureau's API.
+Collate:
+    'census-api.r'
