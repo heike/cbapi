@@ -27,6 +27,7 @@
 #' table(subset(gp, depth>2)$V2)
 #' }
 getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
+  data(censusData)
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   require(XML)
   doc <- htmlParse(db$xml[1], useInternalNodes = TRUE)
@@ -63,6 +64,7 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
 #' In order to access the Census Bureau's data, you have to get a key and agree to the terms of service. You can sign up for a key at http://www.census.gov/data/key_signup.html
 #' @export
 getkey <- function() {
+  try(data(key))
   if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://www.census.gov/data/key_signup.html")
   else key
 }
