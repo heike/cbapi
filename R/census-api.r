@@ -69,6 +69,16 @@ getkey <- function() {
   else key
 }
 
+#' Set the developer's key to access the API
+#' 
+#' Save the developer's key to a file for use.
+#' @param key
+#' @export
+setkey <- function(key) {
+  save(key, file="data/key.RData")
+  cat("key is saved, now install the package again.")
+}
+
 
 #' Read raw data from the Census Bureau using the API
 #' 
