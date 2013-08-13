@@ -6,13 +6,13 @@
 #' @param search should the list of variables be interpreted as search terms?
 #' @export
 #' @return data frame with following fields:
-#' \begin{itemize}
+#' \itemize{
 #' \item ID: variable ID 
 #' \item Name: name of the variable
 #' \item Node: full path to the variable
 #' \item depth: positive integer number of the path length
 #' \item ... an arbitrary number of variables, one for each level of the path
-#' \end{itemize}
+#' }
 #' @examples
 #' \dontrun{
 #' census2010 <- getDBInfo("sf1", 2010)
@@ -65,18 +65,21 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
 #' @export
 getkey <- function() {
   try(data(key))
-  if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://www.census.gov/data/key_signup.html")
+  if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://www.census.gov/data/key_signup.html\nThen see ?setkey")
   else key
 }
 
 #' Set the developer's key to access the API
 #' 
 #' Save the developer's key to a file for use.
-#' @param key
+#' @param key character string of the key you got from 
 #' @export
 setkey <- function(key) {
-  save(key, file="data/key.RData")
-  cat("key is saved, now install the package again.")
+  dir <- system.file(package = "cbapi")
+  save(key, file=sprintf("%s/data/key.RData", dir))
+  cat("key is saved, now you will be able to access data through the API. ")
+#  require(devtools)
+#  install(dir)
 }
 
 
@@ -126,6 +129,7 @@ read.census <- function(url) {
 #' places <- getData("sf1", 2010, "P0010001", .for = "place", .in="")
 #' }
 getData <- function(.dbname, .year, vars, .for="congressional+district", .in="state") {
+  data(censusData)
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   varlist <- paste(as.character(vars), collapse=",")
   if (length(grep(":", .in)) == 0) .in <- sprintf("%s:*", .in)

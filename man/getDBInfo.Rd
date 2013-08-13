@@ -18,12 +18,11 @@
   as search terms?}
 }
 \value{
-  data frame with following fields: \begin{itemize} \item
-  ID: variable ID \item Name: name of the variable \item
-  Node: full path to the variable \item depth: positive
-  integer number of the path length \item ... an arbitrary
-  number of variables, one for each level of the path
-  \end{itemize}
+  data frame with following fields: \itemize{ \item ID:
+  variable ID \item Name: name of the variable \item Node:
+  full path to the variable \item depth: positive integer
+  number of the path length \item ... an arbitrary number
+  of variables, one for each level of the path }
 }
 \description{
   Get variable names and descriptions for data sets
