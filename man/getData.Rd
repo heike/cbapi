@@ -45,6 +45,27 @@ zips <- getData("sf1", 2010, "P0010001", .for="zip+code+tabulation+area", .in="s
 counties <- getData("sf1", 2010, "P0010001", .for = "county", .in="")
 counties[,1] <- as.numeric(counties[,1])
 places <- getData("sf1", 2010, "P0010001", .for = "place", .in="")
+
+info <- getDBInfo("acs1_cd113", 2011, "ancestry")
+# get rid of all the margins of error:
+info <- info[-2*(1:27),]
+ancestry <- getData("acs1_cd113", 2011, c("DP02_0086E", as.character(info$ID)))
+data(cdmap)
+ancestry$GEOID <- with(ancestry, paste(state,`congressional district`, sep=""))
+countries <- names(ancestry)[2:28]
+res <- unlist(llply(1:nrow(ancestry), function(i) which.max(ancestry[i,2:28])))
+ancestry$top <- names(res)
+
+cdmap.data <- merge(cdmap, ancestry, by="GEOID")
+write.csv(cdmap.data, file="cd.csv", row.names=FALSE)
+cdmap.data <- read.csv("cd.csv")
+
+library(ggplot2)
+qplot(Long, Lat, fill=top,
+data=cdmap.data, geom="polygon", group=group, order=order) +
+  theme_bw() +
+  theme(legend.position="bottom") +
+  scale_fill_brewer("Most common ancestry", palette="Set3", guide = guide_legend(nrow=3))
 }
 }
 

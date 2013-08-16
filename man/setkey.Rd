@@ -5,7 +5,7 @@
   setkey(key)
 }
 \arguments{
-  \item{key}{}
+  \item{key}{character string of the key you got from}
 }
 \description{
   Save the developer's key to a file for use.
