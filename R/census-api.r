@@ -15,10 +15,17 @@
 #' }
 #' @examples
 #' \dontrun{
+#' ## need internet connection for the following code
+#' 
+#' ## get meta information for the full summary file 1 file for Census 2010
 #' census2010 <- getDBInfo("sf1", 2010)
+#' 
+#' ## all available information on 'total population' from the 2011 American Community Survey 
 #' acs <- getDBInfo("acs1_cd113", 2011, "total population")
 #' table(acs$V1.1)
 #' head(subset(acs, depth == 2))
+#' 
+#' ## get complete meta information for the 2011 American Community Survey
 #' acs_all <- getDBInfo("acs1_cd113", 2011)
 #' table(acs_all$depth)
 #' table(acs_all$V1.1)  # concept variables
@@ -27,7 +34,7 @@
 #' table(subset(gp, depth>2)$V2)
 #' }
 getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
-  data(censusData)
+  data(censusData, envir = environment())
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   require(XML)
   doc <- htmlParse(db$xml[1], useInternalNodes = TRUE)
@@ -64,7 +71,7 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
 #' In order to access the Census Bureau's data, you have to get a key and agree to the terms of service. You can sign up for a key at http://www.census.gov/data/key_signup.html
 #' @export
 getkey <- function() {
-  try(data(key))
+  try(data(key, , envir = environment()))
   if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://www.census.gov/data/key_signup.html\nThen see ?setkey")
   else key
 }
@@ -150,7 +157,7 @@ read.census <- function(url) {
 #'   scale_fill_brewer("Most common ancestry", palette="Set3", guide = guide_legend(nrow=3))
 #' }
 getData <- function(.dbname, .year, vars, .for="congressional+district", .in="state") {
-  data(censusData)
+  data(censusData, envir = environment())
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   varlist <- paste(as.character(vars), collapse=",")
   if (length(grep(":", .in)) == 0) .in <- sprintf("%s:*", .in)

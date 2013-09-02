@@ -1,5 +1,13 @@
 
 
+
+
+
+ancestry <- getData("acs1_cd113", 2011, info$ID)
+
+
+
+
 # total population, all congressional districts of iowa
 u1 <- "http://api.census.gov/data/2011/acs1_cd113?key=7f784587c3918611ad6ca67188d9b269b3558dd4&get=DP02_0086E&for=congressional+district:*&in=state:19"
 head(getDBInfo("acs1_cd113", 2011, "Total population"))
@@ -65,19 +73,32 @@ coord_flip() +
 
 
 
-library(CBapi)
-data(censusData)
+library(cbapi)
+zips <- getData("sf1", 2010, "P0010001", .for="zip+code+tabulation+area", .in="state:19")
+zips[,1] <- as.numeric(zips[,1])
+summary(zips)
+
 info <- getDBInfo("acs1_cd113", 2011, "ancestry")
 # get rid of all the margins of error:
 info <- info[-2*(1:27),]
-data(key)
 ancestry <- getData("acs1_cd113", 2011, c("DP02_0086E", as.character(info$ID)))
 data(cdmap)
 ancestry$GEOID <- with(ancestry, paste(state,`congressional district`, sep=""))
+countries <- names(ancestry)[2:28]
+res <- unlist(llply(1:nrow(ancestry), function(i) which.max(ancestry[i,2:28])))
+ancestry$top <- names(res)
+
 cdmap.data <- merge(cdmap, ancestry, by="GEOID")
 write.csv(cdmap.data, file="cd.csv", row.names=FALSE)
 cdmap.data <- read.csv("cd.csv")
+
 library(ggplot2)
+qplot(Long, Lat, fill=top, 
+      data=cdmap.data, geom="polygon", group=group, order=order) + 
+  theme_bw() +
+  theme(legend.position="bottom") + 
+  scale_fill_brewer("Most common ancestry", palette="Set3", guide = guide_legend(nrow=3))
+
 qplot(Long, Lat, fill=French.Canadian/Total.population*100, 
       data=cdmap.data, geom="polygon", group=group, order=order) + theme(legend.position="bottom")
 ggsave("french-canadian.pdf", width=15, height=10)
@@ -89,6 +110,10 @@ ggsave("german.pdf", width=15, height=10)
 qplot(Long, Lat, fill=German/Total.population*100, 
       data=cdmap.data, geom="polygon", group=group, order=order) + theme(legend.position="bottom")
 ggsave("german.pdf", width=15, height=10)
+
+qplot(Long, Lat, fill=Norwegian/Total.population*100, 
+      data=cdmap.data, geom="polygon", group=group, order=order) + theme(legend.position="bottom")
+ggsave("norwegian.pdf", width=15, height=10)
 
 qplot(Long, Lat, fill=Scottish/Total.population*100, 
       data=cdmap.data, geom="polygon", group=group, order=order) + theme(legend.position="bottom")

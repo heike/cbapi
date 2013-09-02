@@ -30,10 +30,17 @@
 }
 \examples{
 \dontrun{
+## need internet connection for the following code
+
+## get meta information for the full summary file 1 file for Census 2010
 census2010 <- getDBInfo("sf1", 2010)
+
+## all available information on 'total population' from the 2011 American Community Survey
 acs <- getDBInfo("acs1_cd113", 2011, "total population")
 table(acs$V1.1)
 head(subset(acs, depth == 2))
+
+## get complete meta information for the 2011 American Community Survey
 acs_all <- getDBInfo("acs1_cd113", 2011)
 table(acs_all$depth)
 table(acs_all$V1.1)  # concept variables
