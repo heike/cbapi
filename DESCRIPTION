@@ -13,3 +13,4 @@ Suggests:
 Description: Functions to access data through the US Census Bureau's API.
 Collate:
     'census-api.r'
+    'data.r'
