@@ -4,6 +4,13 @@
 \usage{
   read.census(url)
 }
+\arguments{
+  \item{url}{character vector of length one containing the
+  get query.}
+}
+\value{
+  data frame
+}
 \description{
   Get raw data from the Census Bureau, JSON format is
   converted to R data frame
