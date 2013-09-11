@@ -5,9 +5,9 @@
   listGeo(year, dbname)
 }
 \arguments{
-  \item{year}{}
+  \item{year}{four digit year}
 
-  \item{database}{see censusData$dbname for available
+  \item{dbname}{see censusData$dbname for available
   databases}
 }
 \value{

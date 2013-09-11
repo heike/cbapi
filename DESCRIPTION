@@ -3,8 +3,11 @@ Maintainer: Heike Hofmann <hofmann@iastate.edu>
 Author: Heike Hofmann
 Version: 0.9
 License: MIT
+LazyData: yes
+LazyDataCompression: bzip2
 Title: Accessing data through the API of the Census Bureau
 Depends:
+    R (>= 2.10),
     plyr,
     rjson,
     XML

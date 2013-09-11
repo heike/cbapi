@@ -35,6 +35,10 @@
 #' }
 getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
   data(censusData, envir = environment())
+  # make bindings visible
+  year <- NULL
+  dbname <- NULL
+  ID <- NULL
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   require(XML)
   doc <- htmlParse(db$xml[1], useInternalNodes = TRUE)
@@ -161,6 +165,9 @@ read.census <- function(url) {
 #' }
 getData <- function(.dbname, .year, vars, .for="congressional+district", .in="state") {
   data(censusData, envir = environment())
+  year <- NULL
+  dbname <- NULL
+  
   db <- subset(censusData, (year ==.year) & (dbname == .dbname))
   varlist <- paste(as.character(vars), collapse=",")
   if (length(grep(":", .in)) == 0) .in <- sprintf("%s:*", .in)
@@ -177,8 +184,8 @@ getData <- function(.dbname, .year, vars, .for="congressional+district", .in="st
 
 #' List available geographic units for a database
 #' 
-#' @param year
-#' @param database see censusData$dbname for available databases
+#' @param year four digit year
+#' @param dbname see censusData$dbname for available databases
 #' @export
 #' @return data frame with examples for the available geographic units in the database
 #' @examples
