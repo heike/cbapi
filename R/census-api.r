@@ -75,15 +75,15 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
 #' In order to access the Census Bureau's data, you have to get a key and agree to the terms of service. You can sign up for a key at http://www.census.gov/data/key_signup.html
 #' @export
 getkey <- function() {
-  try(data(key, , envir = environment()))
-  if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://www.census.gov/data/key_signup.html\nThen see ?setkey")
+  try(data(key, envir = environment()))
+  if (is.null(key)) cat("You need to sign up for a key for using the Census Bureau's API at http://api.census.gov/data/key_signup.html\nThen see ?setkey")
   else key
 }
 
 #' Set the developer's key to access the API
 #' 
-#' Save the developer's key to a file for use.
-#' @param key character string of the key you got from 
+#' Save the developer's key to a file for enabling use of teh Census Bureau's API. You can request a key from http://api.census.gov/data/key_signup.html.
+#' @param key character string of the key you got from the Census Bureau.
 #' @export
 setkey <- function(key) {
   dir <- system.file(package = "cbapi")
