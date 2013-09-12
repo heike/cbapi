@@ -87,9 +87,11 @@ getkey <- function() {
 #' @export
 setkey <- function(key) {
   dir <- system.file(package = "cbapi")
+  key <- key
   save(key, file=sprintf("%s/data/key.RData", dir))
   cat("key is saved, now you will be able to access data through the API. ")
-#  require(devtools)
+  try(data(key, envir = environment()))
+  #  require(devtools)
 #  install(dir)
 }
 
