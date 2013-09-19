@@ -19,5 +19,6 @@
 }
 \examples{
 listGeo(2010, "sf1")[,-3]
+iowa <- read.census(gsub("XXX", getkey(), "http://api.census.gov/data/2010/sf1?key=XXX&get=P0010001,NAME&for=zip+code+tabulation+area:*&in=state:19"))
 }
 

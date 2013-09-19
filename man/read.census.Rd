@@ -16,8 +16,11 @@
   converted to R data frame
 }
 \examples{
+# State populations based on the 2010 Decennial Census
+popstate <- read.census(sprintf("http://api.census.gov/data/2010/sf1?key=\%s&get=P0010001,NAME&for=state:*", getkey()))
+
 #  get data on total population for all congressional districts of iowa
-u1 <- "http://api.census.gov/data/2011/acs1_cd113?key=7f784587c3918611ad6ca67188d9b269b3558dd4&get=DP02_0086E&for=congressional+district:*&in=state:19"
+u1 <- sprintf("http://api.census.gov/data/2011/acs1_cd113?key=\%s&get=DP02_0086E&for=congressional+district:*&in=state:19", getkey())
 df2 <- read.census(u1)
 }
 
