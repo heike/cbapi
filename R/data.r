@@ -13,6 +13,9 @@
 #' \item \emph{group:} group within polygon
 #' \item \emph{GEOID:} equivalent to group but first two digits are state fips code.
 #' }
+#' @example
+#' ## read from ACS 2012 profile:
+#' read.census(sprintf("http://api.census.gov/data/2012/acs1/profile?get=DP02_0001PE&for=state:*&key=%s", getkey()))
 #' @docType data
 #' @usage data(cdmap)
 NULL
