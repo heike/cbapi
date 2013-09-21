@@ -44,7 +44,7 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
   doc <- htmlParse(db$xml[1], useInternalNodes = TRUE)
   varlist <- getNodeSet(doc, "//variable")
   dframe.api <- ldply(varlist, function(x) { 
-    data.frame(xmlAttrs(x)["name"], xmlValue(x))})
+    data.frame(xmlAttrs(x)["name"], xmlAttrs(x)["concept"], xmlValue(x))})
   hierarchy <- strsplit(as.character(dframe.api[,2]), " *!! *")
   ks <- laply(hierarchy,length)
   kmax <- max(ks)
@@ -56,7 +56,7 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
                               res
                             }))
   
-  names(dframe.api2)[1:3] <- c("ID", "Name", "Node")
+  names(dframe.api2)[1:4] <- c("ID", "Name", "Concept",  "Node")
   if (is.null(vars)) {
     return(dframe.api2)  
   }
@@ -200,6 +200,7 @@ getData <- function(.dbname, .year, vars, .for="congressional+district", .in="st
 #' @return data frame with examples for the available geographic units in the database
 #' @examples
 #' listGeo(2010, "sf1")[,-3]
+#' iowa <- read.census(gsub("XXX", getkey(), "http://api.census.gov/data/2010/sf1?key=XXX&get=P0010001,NAME&for=zip+code+tabulation+area:*&in=state:19"))
 listGeo <- function(year, dbname) {
   url <- sprintf("http://api.census.gov/data/%s/%s/geo.html", year, dbname)
   require(XML)
