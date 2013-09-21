@@ -20,5 +20,11 @@
   Map of congressional districts based on the 113th
   congress
 }
+\examples{
+\dontrun{
+## read from ACS 2012 profile:
+read.census(sprintf("http://api.census.gov/data/2012/acs1/profile?get=DP02_0001PE&for=state:*&key=\%s", getkey()))
+}
+}
 \keyword{datasets}
 
