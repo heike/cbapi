@@ -60,10 +60,13 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
   if (is.null(vars)) {
     return(dframe.api2)  
   }
-  names <- dframe.api2$Name
+  names <- dframe.api2$Concept
   if (search) {
     idx <- sort(unique(unlist(sapply(vars, function(x) grep(tolower(x), tolower(names))))))
-    if (length(idx) == 0) return(dframe.api2) 
+    if (length(idx) == 0) {
+      warning("No variable matched the search criteria.")
+      return(dframe.api2) 
+    } 
     return(dframe.api2[idx,])
   } else {
     return(subset(dframe.api2, ID %in% vars)) 
