@@ -1,13 +1,19 @@
 Package: cbapi
-Title: Tools for pulling data from the Census Bureau API.
-Description:
-Version: 0.1
 Maintainer: Heike Hofmann <hofmann@iastate.edu>
 Author: Heike Hofmann
+Version: 0.9
 License: MIT
-Depends: R (>= 3.0.2)
-         plyr,
-         rjson
+LazyData: yes
+LazyDataCompression: bzip2
+Title: Accessing data through the API of the Census Bureau
+Depends:
+    R (>= 2.10),
+    plyr,
+    rjson,
+    XML
 Suggests:
     ggplot2
-
+Description: Functions to access data through the US Census Bureau's API.
+Collate:
+    'census-api.r'
+    'data.r'

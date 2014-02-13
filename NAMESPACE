@@ -1,0 +1,6 @@
+export(getDBInfo)
+export(getData)
+export(getkey)
+export(listGeo)
+export(read.census)
+export(setkey)
