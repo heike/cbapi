@@ -1,7 +1,7 @@
 #' Get variable names and descriptions for data sets available through Census Bureau API
 #' 
-#' @param .dbname name of the database, one of "sf1", "acs5", "acs1_cd113", "sf1", "sf3", "sf1", "sf3". see dataset censusData for a list
-#' @param .year year of interest - cf censusData
+#' @param .dbname name of the database, one of "sf1", "acs5", "acs1_cd113", "sf1", "sf3", "sf1", "sf3". see dataset censusData$c_dataset for a list
+#' @param .year year of interest - cf censusData$c_vintage
 #' @param vars list of variables, if NULL, all are returned in the result
 #' @param search should the list of variables be interpreted as search terms?
 #' @export
@@ -21,16 +21,16 @@
 #' census2010 <- getDBInfo("sf1", 2010)
 #' 
 #' ## all available information on 'total population' from the 2011 American Community Survey 
-#' acs <- getDBInfo("acs1_cd113", 2011, "total population")
-#' table(acs$V1.1)
+#' acs <- getDBInfo("acs5", 2011, "total population")
+#' table(acs$V1)
 #' head(subset(acs, depth == 2))
 #' 
 #' ## get complete meta information for the 2011 American Community Survey
-#' acs_all <- getDBInfo("acs1_cd113", 2011)
+#' acs_all <- getDBInfo("acs5", 2011)
 #' table(acs_all$depth)
-#' table(acs_all$V1.1)  # concept variables
-#' subset(acs_all, V1.1 == "LANGUAGE SPOKEN AT HOME")
-#' gp <- subset(acs_all, V1.1 == "GRANDPARENTS")
+#' sort(table(acs_all$V1))
+#' acs_all[grep("LANGUAGE SPOKEN AT HOME", acs_all$concept),]
+#' gp <- acs_all[grep("GrndPrnts", acs_all$concept),]
 #' table(subset(gp, depth>2)$V2)
 #' }
 getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
@@ -39,37 +39,46 @@ getDBInfo <- function(.dbname, .year, vars=NULL, search=TRUE) {
   year <- NULL
   dbname <- NULL
   ID <- NULL
-  db <- subset(censusData, (year ==.year) & (dbname == .dbname))
-  require(XML)
-  doc <- htmlParse(db$xml[1], useInternalNodes = TRUE)
-  varlist <- getNodeSet(doc, "//variable")
-  dframe.api <- ldply(varlist, function(x) { 
-    data.frame(xmlAttrs(x)["name"], xmlAttrs(x)["concept"], xmlValue(x))})
-  hierarchy <- strsplit(as.character(dframe.api[,2]), " *!! *")
+  db <- subset(censusData, (c_vintage ==.year) & (c_dataset == .dbname))
+  if (nrow(db) == 0)  stop("no dataset found with this specification. do you need to update censusData?")
+  
+  require(rjson)
+  suppressWarnings(varlist <- fromJSON(file=as.character(db$c_variablesLink)))
+  varframe <- ldply(varlist$variables, as.data.frame)
+  varframe$.id <- as.character(varframe$.id)
+  
+  
+  hierarchy <- strsplit(as.character(varframe$label), " *!! *")
   ks <- laply(hierarchy,length)
   kmax <- max(ks)
-  dframe.api2 <- data.frame(dframe.api, Name=ldply(hierarchy, function(x) x[length(x)]),
+  varframe.api <- data.frame(varframe, 
                             depth=ks,
                             ldply(hierarchy, function(x) {
                               res <- rep(NA, kmax)
                               res[1:length(x)] <- gsub("\"","", x)
+                              res <- gsub(" *:$","", res)
                               res
-                            }))
+                            }), stringsAsFactors = FALSE)
   
-  names(dframe.api2)[1:4] <- c("ID", "Name", "Concept",  "Node")
+#  names(varframe.api)[1:3] <- c("ID", "Label", "Concept")
   if (is.null(vars)) {
-    return(dframe.api2)  
+    return(varframe.api)  
   }
-  names <- dframe.api2$Concept
+  
   if (search) {
+    names <- as.character(varframe.api$concept)
+    if (length(names) == 0) {
+      warning("No variable matched the search criteria.")
+      return(varframe.api) 
+    }
     idx <- sort(unique(unlist(sapply(vars, function(x) grep(tolower(x), tolower(names))))))
     if (length(idx) == 0) {
       warning("No variable matched the search criteria.")
-      return(dframe.api2) 
+      return(varframe.api) 
     } 
-    return(dframe.api2[idx,])
+    return(varframe.api[idx,])
   } else {
-    return(subset(dframe.api2, ID %in% vars)) 
+    return(subset(varframe.api, .id %in% vars)) 
   } 
 }
 
@@ -90,7 +99,8 @@ getkey <- function() {
 
 #' Set the developer's key to access the API
 #' 
-#' Save the developer's key to a file for enabling use of teh Census Bureau's API. You can request a key from http://api.census.gov/data/key_signup.html.
+#' Save the developer's key to a file for enabling use of the Census Bureau's API. You can request a key from http://api.census.gov/data/key_signup.html.
+#' You only have to do this once. 
 #' @param key character string of the key you got from the Census Bureau.
 #' @export
 setkey <- function(key) {
@@ -115,7 +125,7 @@ setkey <- function(key) {
 #' popstate <- read.census(sprintf("http://api.census.gov/data/2010/sf1?key=%s&get=P0010001,NAME&for=state:*", getkey()))
 #' 
 #' #  get data on total population for all congressional districts of iowa
-#' u1 <- sprintf("http://api.census.gov/data/2011/acs1_cd113?key=%s&get=DP02_0086E&for=congressional+district:*&in=state:19", getkey())
+#' u1 <- sprintf("http://api.census.gov/data/2011/acs1_cd113?key=%s&get=DP02_0086E,DP02_0086M&for=congressional+district:*&in=state:19", getkey())
 #' df2 <- read.census(u1)
 read.census <- function(url) {
   require(rjson)
@@ -138,9 +148,10 @@ read.census <- function(url) {
 #' @return data frame
 #' @examples
 #' \dontrun{
-#' getDBInfo("acs1_cd113", 2011, "sex")[3:6,]
-#' getDBInfo("acs1_cd113", 2011, "hispanic")[3:6,]
-#' hispanics <- getData("acs1_cd113", 2011, c("DP02_0086E", "DP05_0066E","DP05_0071E"))
+#' getDBInfo("sf1", 2010, "sex")[3:6,]
+#' getDBInfo("acs5", 2011, "hispanic")[3:6,]
+#' 
+#' hispanics <- getData("acs1/cd113", 2011, c("DP02_0086E", "DP05_0066E","DP05_0071E"))
 #' require(ggplot2)
 #' hispanics$`Hispanic or Latino (of any race)` <- as.numeric(as.character(hispanics$`Hispanic or Latino (of any race)`))
 #' hispanics$`Not Hispanic or Latino` <- as.numeric(as.character(hispanics$`Not Hispanic or Latino`))
@@ -150,7 +161,9 @@ read.census <- function(url) {
 #' hispanics$GEOID <- with(hispanics, paste(state,`congressional district`, sep=""))
 #' cdmap.data <- merge(cdmap, hispanics, by="GEOID")
 #' qplot(Long, Lat, fill=`Hispanic or Latino (of any race)`/`Total population`, data=cdmap.data, geom="polygon", group=group, order=order)
+#' 
 #' zips <- getData("sf1", 2010, "P0010001", .for="zip+code+tabulation+area", .in="state:19")
+#' 
 #' counties <- getData("sf1", 2010, "P0010001", .for = "county", .in="")
 #' counties[,1] <- as.numeric(counties[,1])
 #' places <- getData("sf1", 2010, "P0010001", .for = "place", .in="")
@@ -158,7 +171,7 @@ read.census <- function(url) {
 #' info <- getDBInfo("acs1_cd113", 2011, "ancestry")
 #' # get rid of all the margins of error:
 #' info <- info[-2*(1:27),]
-#' ancestry <- getData("acs1_cd113", 2011, c("DP02_0086E", as.character(info$ID)))
+#' ancestry <- getData("acs1/cd113", 2011, c("DP02_0086E", as.character(info$ID)))
 #' data(cdmap)
 #' ancestry$GEOID <- with(ancestry, paste(state,`congressional district`, sep=""))
 #' countries <- names(ancestry)[2:28]
@@ -181,31 +194,76 @@ getData <- function(.dbname, .year, vars, .for="congressional+district", .in="st
   year <- NULL
   dbname <- NULL
   
-  db <- subset(censusData, (year ==.year) & (dbname == .dbname))
+  db <- subset(censusData, (c_vintage ==.year) & (c_dataset == .dbname))
   varlist <- paste(as.character(vars), collapse=",")
   if (length(grep(":", .in)) == 0) .in <- sprintf("%s:*", .in)
   if (length(grep(":", .for)) == 0) .for <- sprintf("%s:*", .for)
-  url <- sprintf("%s/%d/%s?key=%s&get=%s,NAME&for=%s&in=%s", db$url[1], .year, .dbname, getkey(), varlist, .for, .in)
+  url <- sprintf("%s?key=%s&get=%s,NAME&for=%s&in=%s", db$webService, getkey(), varlist, .for, .in)
   cat(gsub("key=[^&]*", "", sprintf("Getting data from: %s", url)))
   dframe <- read.census(url)
   
   k <- length(vars)
-  names(dframe)[1:k] <- getDBInfo(.dbname, .year, vars, search=FALSE)$Node
+  names(dframe)[1:k] <- as.character(getDBInfo(.dbname, .year, vars, search=FALSE)$label)
   
   dframe
 }
 
-#' List available geographic units for a database
+#' List examples of available geographic units for a database
+#' 
 #' 
 #' @param year four digit year
 #' @param dbname see censusData$dbname for available databases
 #' @export
 #' @return data frame with examples for the available geographic units in the database
 #' @examples
-#' listGeo(2010, "sf1")[,-3]
+#' listGeoExamples(2010, "sf1")[,-3]
 #' iowa <- read.census(gsub("XXX", getkey(), "http://api.census.gov/data/2010/sf1?key=XXX&get=P0010001,NAME&for=zip+code+tabulation+area:*&in=state:19"))
-listGeo <- function(year, dbname) {
+listGeoExamples <- function(year, dbname) {
   url <- sprintf("http://api.census.gov/data/%s/%s/geo.html", year, dbname)
   require(XML)
   readHTMLTable(url)[[1]]
+}
+
+#' List of available geographic units for a database
+#' 
+#' @param year four digit year
+#' @param dbname see censusData$dbname for available databases
+#' @return data frame with available geographic units in the database and their requirements 
+#' @examples
+#' listGeo(2010, "sf1")
+#' listGeo(2011, "acs1")
+#' listGeo(2012, "acs1")
+#' iowa <- read.census(gsub("XXX", getkey(), "http://api.census.gov/data/2010/sf1?key=XXX&get=P0010001,NAME&for=zip+code+tabulation+area:*&in=state:19"))
+#' @export
+listGeo <- function(year, dbname) {
+  require(rjson)
+  url <- subset(censusData, c_vintage == year & c_dataset == dbname)$c_geographyLink
+  if (length(url) == 0) error("there is no data set available with this combination of data set identifier and year. is censusData up to date?")
+  if (length(url) > 1) warning("there are multiple choices available for this combination of data and year. using the first one.")
+  url <- url[1]
+  suppressWarnings(geolist <- fromJSON(file=as.character(url)))
+  geoframe <- ldply(geolist$fips, function(x) {
+    x$requires <- paste(x$requires, collapse=", ")
+    as.data.frame(x)
+  })
+  geoframe
+}
+
+#' Update the list of datasets available through the Census Bureau's API
+#' 
+#' Updates the version of the censusData data set from the information available at \url{http://api.census.gov/data/}. This might get the help file for censusData out of sync. It might also break access to the API. Do at your own risk, and be prepared to re-install the cbapi package. 
+#' @return updated version of the censusData 
+#' @export
+updateCensusData <- function() {
+  url <- "http://api.census.gov/data/"
+  require(rjson)
+  suppressWarnings(datalist <- fromJSON(file=url))
+  require(plyr)
+  censusData <- ldply(datalist, function(x) {
+    x$c_dataset <- paste(x$c_dataset, collapse="/")
+    as.data.frame(x)
+  })
+  dir <- system.file(package = "cbapi")
+  save(censusData, file=sprintf("%s/data/censusData.RData", dir))
+  cat("censusData set is updated now.")
 }

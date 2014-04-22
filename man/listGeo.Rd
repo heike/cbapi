@@ -1,6 +1,6 @@
 \name{listGeo}
 \alias{listGeo}
-\title{List available geographic units for a database}
+\title{List of available geographic units for a database}
 \usage{
   listGeo(year, dbname)
 }
@@ -11,14 +11,15 @@
   databases}
 }
 \value{
-  data frame with examples for the available geographic
-  units in the database
+  data frame with available geographic units in the
+  database and their requirements
 }
 \description{
-  List available geographic units for a database
+  List of available geographic units for a database
 }
 \examples{
-listGeo(2010, "sf1")[,-3]
+listGeo(2010, "sf1")
+listGeo(2010, "acs")
 iowa <- read.census(gsub("XXX", getkey(), "http://api.census.gov/data/2010/sf1?key=XXX&get=P0010001,NAME&for=zip+code+tabulation+area:*&in=state:19"))
 }
 

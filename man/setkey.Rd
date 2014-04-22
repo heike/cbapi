@@ -10,7 +10,8 @@
 }
 \description{
   Save the developer's key to a file for enabling use of
-  teh Census Bureau's API. You can request a key from
-  http://api.census.gov/data/key_signup.html.
+  the Census Bureau's API. You can request a key from
+  http://api.census.gov/data/key_signup.html. You only have
+  to do this once.
 }
 
